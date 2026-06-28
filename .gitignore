@@ -21,3 +21,7 @@ Thumbs.db
 04-drift-detection/reports/
 04-drift-detection/drift-summary.json
 **/drift-summary.json
+
+# AgentOps bonus generated artifact (students create their own in submission/)
+agentops-report.json
+BONUS-agentops/agentops-report.json
