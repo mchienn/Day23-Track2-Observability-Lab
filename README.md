@@ -57,7 +57,7 @@ make down                  # stop (preserves data)
 
 ## Slide → Track mapping
 
-> Lecture deck (2026 cut) = **21 sections**: Part A observability §1–15 (incl. **§14 Harness, Loop & Self-Improvement Flywheel**), Part B Ops §16–20 (Ops-Trinity · MLOps · LLMOps · AgentOps · **AIOps**), §21 demo.
+> Lecture deck (2026 cut) = **21 sections, one continuous flow**: observability §1–15 (incl. **§14 Harness, Loop & Self-Improvement Flywheel**) → Ops disciplines §16–20 (Ops-Trinity · MLOps · LLMOps · AgentOps · **AIOps**) → §21 demo.
 
 | Deck section | Lab track |
 |---|---|
@@ -75,9 +75,9 @@ make down                  # stop (preserves data)
 | §13 Agent Observability (spans, SLIs)          | reading · `BONUS-agentops/` · `BONUS-llm-native-obs/` |
 | **§14 Harness, Loop & Self-Improvement Flywheel** | **`BONUS-agentops/`** (harness telemetry · loop SLIs · observe→skill) |
 | §15 Experimentation · Shadow / Canary          | `04-drift-detection/` (advanced) |
-| §16–18 Ops Trinity · MLOps · LLMOps             | reading (Part B — conceptual) |
+| §16–18 Ops Trinity · MLOps · LLMOps             | reading (conceptual) |
 | **§19 AgentOps Deepdive (pass^k, durable exec)** | **`BONUS-agentops/`** (reflection) |
-| §20 AIOps (AI for IT ops)                       | reading (Part B — conceptual) |
+| §20 AIOps (AI for IT ops)                       | reading (conceptual) |
 | §21 Demo + Lab + Summary                       | `make demo` |
 
 ## What's NOT in the lab (and why)
