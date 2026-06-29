@@ -7,6 +7,9 @@ from __future__ import annotations
 import time
 from contextlib import asynccontextmanager
 
+from opentelemetry import context as otel_context
+from opentelemetry.trace import StatusCode, set_span_in_context
+
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -20,8 +23,8 @@ from instrumentation import (
     INFERENCE_REQUESTS,
     INFERENCE_TOKENS,
     bind_log,
+    get_tracer,
     setup_otel,
-    tracer,
 )
 from inference import simulate_inference, simulate_gpu_load
 
@@ -66,13 +69,18 @@ def metrics() -> Response:
 def predict(req: PredictRequest) -> PredictResponse:
     INFERENCE_ACTIVE.inc()
     start = time.perf_counter()
-    span = tracer.start_span("predict")
-    span.set_attribute("gen_ai.request.model", req.model)
+
+    tracer = get_tracer()
+    predict_span = tracer.start_span("predict")
+    predict_span.set_attribute("gen_ai.request.model", req.model)
+    predict_ctx = set_span_in_context(predict_span)
+    ctx_token = otel_context.attach(predict_ctx)
 
     try:
         if req.fail:
             INFERENCE_REQUESTS.labels(model=req.model, status="error").inc()
             log.error("forced failure", model=req.model)
+            predict_span.set_status(StatusCode.ERROR, "forced failure (alert demo)")
             raise HTTPException(status_code=503, detail="forced failure (alert demo)")
 
         with tracer.start_as_current_span("embed-text") as s:
@@ -97,7 +105,7 @@ def predict(req: PredictRequest) -> PredictResponse:
         elapsed = time.perf_counter() - start
         INFERENCE_LATENCY.labels(model=req.model).observe(elapsed)
 
-        trace_id = format(span.get_span_context().trace_id, "032x")
+        trace_id = format(predict_span.get_span_context().trace_id, "032x")
         log.info(
             "prediction served",
             model=req.model,
@@ -115,6 +123,10 @@ def predict(req: PredictRequest) -> PredictResponse:
             trace_id=trace_id,
             quality_score=quality,
         )
+    except Exception as exc:
+        predict_span.set_status(StatusCode.ERROR, str(exc))
+        raise
     finally:
+        predict_span.end()
+        otel_context.detach(ctx_token)
         INFERENCE_ACTIVE.dec()
-        span.end()
